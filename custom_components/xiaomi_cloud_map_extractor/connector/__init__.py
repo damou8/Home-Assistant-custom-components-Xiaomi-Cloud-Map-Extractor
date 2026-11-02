@@ -158,7 +158,9 @@ class XiaomiCloudMapExtractorConnector:
             self._map_cache.status = XiaomiCloudMapExtractorConnectorStatus.OK
             self._map_cache.last_successful_update_timestamp = datetime.now()
             self._map_cache.two_factor_url = None
-            if self._last_hash != (new_hash := hashlib.sha256(self._map_cache.map_data_raw).hexdigest()):
+            # Hash the image too: some models publish the path and the robot position apart from the raw map.
+            map_hash = hashlib.sha256(self._map_cache.map_data_raw + self._map_cache.map_image)
+            if self._last_hash != (new_hash := map_hash.hexdigest()):
                 _LOGGER.debug("Old hash: '%s', New hash: '%s'", self._last_hash, new_hash)
                 self._last_hash = new_hash
                 self._map_cache.last_real_update_timestamp = self._map_cache.last_successful_update_timestamp
